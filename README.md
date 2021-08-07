@@ -1,2 +1,2 @@
 # LuaCMake
-CMake file for including in your project
+CMake file for including into your project
