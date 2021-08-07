@@ -9,6 +9,8 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 endif ()
 
 option(LUA_BUILD_BINARY "Build lua binary" OFF)
+option(LUA_BUILD_SHARED "Build lua shared library" ON)
+option(LUA_BUILD_STATIC "Build lua static library" ON)
 option(LUA_BUILD_AS_CXX "Build lua as C++" ON)
 enable_language(CXX)
 
@@ -55,54 +57,56 @@ set(LUA_SOURCES_FILES
         "${LUA_SOURCES_FOLDER}/linit.c"
         )
 
-if(LUA_BUILD_AS_CXX)
-    set_source_files_properties(${LUA_SOURCES_FOLDER} "lua.c" "luac.c" PROPERTIES LANGUAGE CXX )
-endif()
-
+if (LUA_BUILD_AS_CXX)
+    set_source_files_properties(${LUA_SOURCES_FOLDER} "lua.c" "luac.c" PROPERTIES LANGUAGE CXX)
+endif ()
 
 message(STATUS "Building Lua version ${PROJECT_VERSION}")
 
-add_library(lua_static STATIC ${LUA_SOURCES_FILES})
-add_library(lua_shared SHARED ${LUA_SOURCES_FILES})
-
-target_include_directories(lua_static
-        PUBLIC
-        ${LUA_SOURCES_FOLDER}
-        )
-target_include_directories(lua_shared
-        PUBLIC
-        ${LUA_SOURCES_FOLDER}
-        )
-
-add_library(lua::static ALIAS lua_static)
-add_library(lua::shared ALIAS lua_shared)
-
-if(UNIX)
-    set(LUA_DEFINITIONS)
-
-    if(NOT EMSCRIPTEN)
-        find_library(LIBM m)
-        if(NOT LIBM)
-            message(FATAL_ERROR "libm not found and is required by lua")
-        endif()
-        target_link_libraries(lua_static INTERFACE ${LIBM})
-
-        list(APPEND LUA_DEFINITIONS LUA_USE_POSIX)
-        if(LUA_SUPPORT_DL)
-            target_compile_definitions(lua_static PRIVATE "LUA_USE_DLOPEN")
-            target_link_libraries(lua_static INTERFACE dl)
-        endif()
-    endif()
-
-    target_compile_definitions(lua_static
-            PUBLIC ${LUA_DEFINITIONS}
+if (LUA_BUILD_STATIC OR LUA_BUILD_BINARY)
+    add_library(lua_static STATIC ${LUA_SOURCES_FILES})
+    target_include_directories(lua_static
+            PUBLIC
+            ${LUA_SOURCES_FOLDER}
             )
-    target_compile_options(lua_static
-            PRIVATE "-Wall" "-Wextra"
-            )
-endif()
+    add_library(lua::static ALIAS lua_static)
 
-if(LUA_BUILD_BINARY)
+    if (UNIX)
+        set(LUA_DEFINITIONS)
+
+        if (NOT EMSCRIPTEN)
+            find_library(LIBM m)
+            if (NOT LIBM)
+                message(FATAL_ERROR "libm not found and is required by lua")
+            endif ()
+            target_link_libraries(lua_static INTERFACE ${LIBM})
+
+            list(APPEND LUA_DEFINITIONS LUA_USE_POSIX)
+            if (LUA_SUPPORT_DL)
+                target_compile_definitions(lua_static PRIVATE "LUA_USE_DLOPEN")
+                target_link_libraries(lua_static INTERFACE dl)
+            endif ()
+        endif ()
+
+        target_compile_definitions(lua_static
+                PUBLIC ${LUA_DEFINITIONS}
+                )
+        target_compile_options(lua_static
+                PRIVATE "-Wall" "-Wextra"
+                )
+    endif ()
+endif ()
+
+if (LUA_BUILD_SHARED)
+    add_library(lua_shared SHARED ${LUA_SOURCES_FILES})
+    target_include_directories(lua_shared
+            PUBLIC
+            ${LUA_SOURCES_FOLDER}
+            )
+    add_library(lua::shared ALIAS lua_shared)
+endif ()
+
+if (LUA_BUILD_BINARY AND LUA_BUILD_STATIC)
     include(CheckIncludeFile)
     check_include_file("readline/readline.h" HAVE_READLINE_READLINE_H)
 
@@ -114,5 +118,5 @@ if(LUA_BUILD_BINARY)
     if (HAVE_READLINE_READLINE_H)
         target_compile_definitions(lua PUBLIC "LUA_USE_READLINE")
         target_link_libraries(lua PUBLIC readline)
-    endif()
-endif()
+    endif ()
+endif ()
