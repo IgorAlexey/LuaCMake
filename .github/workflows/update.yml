@@ -22,6 +22,7 @@ jobs:
 
       - name: Configure and build with CMake
         run: |
+          git submodule update --init --recursive --progress
           mkdir build && cd build
           cmake ..
           cmake --build .
