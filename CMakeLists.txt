@@ -8,63 +8,53 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
     message(FATAL_ERROR "Do not build in-source. Please remove CMakeCache.txt and the CMakeFiles/ directory. Then build out-of-source.")
 endif ()
 
-option(LUA_BUILD_BINARY "Build lua binary" OFF)
 option(LUA_BUILD_SHARED "Build lua shared library" ON)
 option(LUA_BUILD_STATIC "Build lua static library" ON)
-option(LUA_BUILD_AS_CXX "Build lua as C++" ON)
-enable_language(CXX)
 
-
-project(lua
-        VERSION 5.4.4
-        DESCRIPTION "Lua embeddable scripting language"
+project(LuaCMake
         LANGUAGES C
-        )
+        DESCRIPTION "Lua embeddable scripting language"
+)
 
-set(LUA_SOURCES_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/lua")
-set(LUA_SOURCES_FILES
-        "${LUA_SOURCES_FOLDER}/lapi.c"
-        "${LUA_SOURCES_FOLDER}/lcode.c"
-        "${LUA_SOURCES_FOLDER}/lctype.c"
-        "${LUA_SOURCES_FOLDER}/ldebug.c"
-        "${LUA_SOURCES_FOLDER}/ldo.c"
-        "${LUA_SOURCES_FOLDER}/ldump.c"
-        "${LUA_SOURCES_FOLDER}/lfunc.c"
-        "${LUA_SOURCES_FOLDER}/lgc.c"
-        "${LUA_SOURCES_FOLDER}/llex.c"
-        "${LUA_SOURCES_FOLDER}/lmem.c"
-        "${LUA_SOURCES_FOLDER}/lobject.c"
-        "${LUA_SOURCES_FOLDER}/lopcodes.c"
-        "${LUA_SOURCES_FOLDER}/lparser.c"
-        "${LUA_SOURCES_FOLDER}/lstate.c"
-        "${LUA_SOURCES_FOLDER}/lstring.c"
-        "${LUA_SOURCES_FOLDER}/ltable.c"
-        "${LUA_SOURCES_FOLDER}/ltm.c"
-        "${LUA_SOURCES_FOLDER}/lundump.c"
-        "${LUA_SOURCES_FOLDER}/lvm.c"
-        "${LUA_SOURCES_FOLDER}/lzio.c"
-        "${LUA_SOURCES_FOLDER}/lauxlib.c"
-        "${LUA_SOURCES_FOLDER}/lbaselib.c"
-        "${LUA_SOURCES_FOLDER}/lcorolib.c"
-        "${LUA_SOURCES_FOLDER}/ldblib.c"
-        "${LUA_SOURCES_FOLDER}/liolib.c"
-        "${LUA_SOURCES_FOLDER}/lmathlib.c"
-        "${LUA_SOURCES_FOLDER}/loadlib.c"
-        "${LUA_SOURCES_FOLDER}/loslib.c"
-        "${LUA_SOURCES_FOLDER}/lstrlib.c"
-        "${LUA_SOURCES_FOLDER}/ltablib.c"
-        "${LUA_SOURCES_FOLDER}/lutf8lib.c"
-        "${LUA_SOURCES_FOLDER}/linit.c"
-        )
+set(LUA_SOURCES
+    "lua/lapi.c"
+    "lua/lcode.c"
+    "lua/lctype.c"
+    "lua/ldebug.c"
+    "lua/ldo.c"
+    "lua/ldump.c"
+    "lua/lfunc.c"
+    "lua/lgc.c"
+    "lua/llex.c"
+    "lua/lmem.c"
+    "lua/lobject.c"
+    "lua/lopcodes.c"
+    "lua/lparser.c"
+    "lua/lstate.c"
+    "lua/lstring.c"
+    "lua/ltable.c"
+    "lua/ltm.c"
+    "lua/lundump.c"
+    "lua/lvm.c"
+    "lua/lzio.c"
+    "lua/lauxlib.c"
+    "lua/lbaselib.c"
+    "lua/lcorolib.c"
+    "lua/ldblib.c"
+    "lua/liolib.c"
+    "lua/lmathlib.c"
+    "lua/loadlib.c"
+    "lua/loslib.c"
+    "lua/lstrlib.c"
+    "lua/ltablib.c"
+    "lua/lutf8lib.c"
+    "lua/linit.c"
+)
 
-if (LUA_BUILD_AS_CXX)
-    set_source_files_properties(${LUA_SOURCES_FOLDER} "lua.c" "luac.c" PROPERTIES LANGUAGE CXX)
-endif ()
+message(STATUS "Building lua version ${PROJECT_VERSION}")
 
-message(STATUS "Building Lua version ${PROJECT_VERSION}")
-
-if (LUA_BUILD_STATIC OR LUA_BUILD_BINARY)
-    add_library(lua_static STATIC ${LUA_SOURCES_FILES})
+if (LUA_BUILD_STATIC)
+    add_library(lua_static STATIC ${LUA_SOURCES})
     target_include_directories(lua_static
             PUBLIC
             ${LUA_SOURCES_FOLDER}
@@ -98,25 +88,7 @@ if (LUA_BUILD_STATIC OR LUA_BUILD_BINARY)
 endif ()
 
 if (LUA_BUILD_SHARED)
-    add_library(lua_shared SHARED ${LUA_SOURCES_FILES})
-    target_include_directories(lua_shared
-            PUBLIC
-            ${LUA_SOURCES_FOLDER}
-            )
+    add_library(lua_shared SHARED ${LUA_SOURCES})
+    target_include_directories(lua_shared PUBLIC lua)
     add_library(lua::shared ALIAS lua_shared)
-endif ()
-
-if (LUA_BUILD_BINARY AND LUA_BUILD_STATIC)
-    include(CheckIncludeFile)
-    check_include_file("readline/readline.h" HAVE_READLINE_READLINE_H)
-
-    add_executable(lua "${LUA_SOURCES_FOLDER}/lua.c")
-    target_link_libraries(lua PUBLIC lua_static)
-    set_target_properties(lua PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-            )
-    if (HAVE_READLINE_READLINE_H)
-        target_compile_definitions(lua PUBLIC "LUA_USE_READLINE")
-        target_link_libraries(lua PUBLIC readline)
-    endif ()
 endif ()
