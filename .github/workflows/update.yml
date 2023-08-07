@@ -22,7 +22,11 @@ jobs:
 
       - name: Configure and build with CMake
         run: |
-          git submodule update --init --recursive --progress
+          # Check for submodule changes
+          if git submodule status --recursive | grep -q '^+'; then
+              git submodule update --init --recursive --progress
+          fi
+
           ls
           mkdir build && cd build
           cmake ..
@@ -30,7 +34,13 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -am "Update Lua submodule"
-          git push
+          # Check for changes in the repository
+          if git diff-index --quiet HEAD --; then
+              echo "No changes in the repository."
+          else
+              # Commit the changes, including submodule updates
+              git config --local user.email "action@github.com"
+              git config --local user.name "GitHub Action"
+              git commit -am "Update Lua submodule and other changes"
+              git push
+          fi
