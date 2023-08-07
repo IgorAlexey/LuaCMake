@@ -13,10 +13,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Update Lua submodule
-        run: |
-          git submodule update --remote --merge
-
       - name: Install Clang
         uses: egor-tensin/setup-clang@v1
 
