@@ -1,5 +1,7 @@
 # Lua CMake
-Keeping updated with the latest Lua source code with github actions, updated automatically every day if any changes.
+Keeping updated with the latest Lua source code with github actions, updated automatically every week.
+
+![example workflow](https://github.com/Sororfortuna/LuaCMake/actions/workflows/update.yml/badge.svg)
 
 ```
 $ git submodule add https://github.com/Sororfortuna/LuaCMake Lua
