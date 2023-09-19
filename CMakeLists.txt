@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7...3.20)
+cmake_minimum_required(VERSION 3.20)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
@@ -57,7 +57,7 @@ if (LUA_BUILD_STATIC)
     add_library(lua_static STATIC ${LUA_SOURCES})
     target_include_directories(lua_static
             PUBLIC
-            ${LUA_SOURCES_FOLDER}
+            lua
             )
     add_library(lua::static ALIAS lua_static)
 
